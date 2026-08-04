@@ -18,6 +18,7 @@ export const initialUsers = [
 export const initialTasks = [
   {
     id: 1,
+    ownerEmail: "dhiren@gmail.com",
     title: "Write methodology chapter",
     description:
       "Prepare research design, data collection, evaluation strategy, and ethical considerations.",
@@ -28,6 +29,7 @@ export const initialTasks = [
   },
   {
     id: 2,
+    ownerEmail: "dhiren@gmail.com",
     title: "Build React prototype",
     description: "Implement the AI-enhanced task dashboard using React.",
     priority: "Medium",
@@ -37,6 +39,7 @@ export const initialTasks = [
   },
   {
     id: 3,
+    ownerEmail: "admin@gmail.com",
     title: "Design recommendation model",
     description:
       "Create weighted scoring and rule-based explanation for framework selection.",

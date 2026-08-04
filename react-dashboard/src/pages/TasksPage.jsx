@@ -17,8 +17,16 @@ function TasksPage({ currentUser, tasks, setTasks, onLogout }) {
   const [aiLoading, setAiLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  const userTasks = useMemo(() => {
+    if (currentUser.role === "Admin") {
+      return tasks;
+    }
+
+    return tasks.filter((task) => task.ownerEmail === currentUser.email);
+  }, [tasks, currentUser]);
+
   const filteredTasks = useMemo(() => {
-    return tasks
+    return userTasks
       .filter((task) => {
         const matchesSearch = task.title
           .toLowerCase()
@@ -30,11 +38,17 @@ function TasksPage({ currentUser, tasks, setTasks, onLogout }) {
         return matchesSearch && matchesStatus;
       })
       .sort((a, b) => {
-        if (sortBy === "dueDate") return a.dueDate.localeCompare(b.dueDate);
-        if (sortBy === "priority") return a.priority.localeCompare(b.priority);
+        if (sortBy === "dueDate") {
+          return (a.dueDate || "").localeCompare(b.dueDate || "");
+        }
+
+        if (sortBy === "priority") {
+          return a.priority.localeCompare(b.priority);
+        }
+
         return a.title.localeCompare(b.title);
       });
-  }, [tasks, search, filterStatus, sortBy]);
+  }, [userTasks, search, filterStatus, sortBy]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -55,6 +69,7 @@ function TasksPage({ currentUser, tasks, setTasks, onLogout }) {
     });
 
     setEditingId(null);
+    setMessage("");
   }
 
   function handleSubmit(event) {
@@ -77,6 +92,7 @@ function TasksPage({ currentUser, tasks, setTasks, onLogout }) {
             ? {
                 ...task,
                 ...form,
+                ownerEmail: task.ownerEmail || currentUser.email,
                 aiGenerated: form.description.trim().length > 0
               }
             : task
@@ -87,6 +103,7 @@ function TasksPage({ currentUser, tasks, setTasks, onLogout }) {
     } else {
       const newTask = {
         id: Date.now(),
+        ownerEmail: currentUser.email,
         ...form,
         aiGenerated: form.description.trim().length > 0
       };
@@ -99,6 +116,11 @@ function TasksPage({ currentUser, tasks, setTasks, onLogout }) {
   }
 
   function handleEdit(task) {
+    if (currentUser.role !== "Admin" && task.ownerEmail !== currentUser.email) {
+      setMessage("You can only edit your own tasks.");
+      return;
+    }
+
     setEditingId(task.id);
 
     setForm({
@@ -113,30 +135,69 @@ function TasksPage({ currentUser, tasks, setTasks, onLogout }) {
   }
 
   function handleDelete(id) {
+    const selectedTask = tasks.find((task) => task.id === id);
+
+    if (
+      selectedTask &&
+      currentUser.role !== "Admin" &&
+      selectedTask.ownerEmail !== currentUser.email
+    ) {
+      setMessage("You can only delete your own tasks.");
+      return;
+    }
+
     setTasks((previous) => previous.filter((task) => task.id !== id));
     setMessage("Task deleted successfully.");
   }
 
-  function generateDescription() {
+  async function generateDescription() {
     if (!form.title.trim()) {
       setMessage("Enter a task title before generating AI description.");
       return;
     }
 
     setAiLoading(true);
-    setMessage("Generating AI description...");
+    setMessage("Generating professional AI task description...");
 
-    setTimeout(() => {
-      const aiDescription = `This task involves completing "${form.title}" by planning the work, identifying key requirements, carrying out the implementation, and reviewing the final outcome.`;
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/ai/generate-task-description",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            title: form.title,
+            priority: form.priority,
+            status: form.status,
+            dueDate: form.dueDate,
+            projectContext:
+              "MSc dissertation project involving React, Angular, Vue.js, AI-enhanced task dashboard, secure backend API integration, and intelligent framework recommendation model."
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "AI generation failed.");
+      }
 
       setForm((previous) => ({
         ...previous,
-        description: aiDescription
+        description: data.description
       }));
 
+      setMessage("Professional AI description generated successfully.");
+    } catch (error) {
+      setMessage(
+        error.message ||
+          "Unable to connect to the AI backend. Please check that the backend server is running."
+      );
+    } finally {
       setAiLoading(false);
-      setMessage("AI description generated successfully.");
-    }, 900);
+    }
   }
 
   return (
@@ -162,8 +223,11 @@ function TasksPage({ currentUser, tasks, setTasks, onLogout }) {
               type="button"
               className="ai-button"
               onClick={generateDescription}
+              disabled={aiLoading}
             >
-              {aiLoading ? "Generating..." : "Generate AI Description"}
+              {aiLoading
+                ? "Generating Professional Description..."
+                : "Generate Professional AI Description"}
             </button>
 
             <label>Description</label>
@@ -225,7 +289,12 @@ function TasksPage({ currentUser, tasks, setTasks, onLogout }) {
             <div className="section-header">
               <div>
                 <h2>Task List</h2>
-                <p>Search, filter, sort, edit, and delete project tasks.</p>
+                <p>
+                  Search, filter, sort, edit, and delete project tasks.
+                  {currentUser.role === "Admin"
+                    ? " Admin can view all user tasks."
+                    : " You can view only your own tasks."}
+                </p>
               </div>
             </div>
 
@@ -256,31 +325,43 @@ function TasksPage({ currentUser, tasks, setTasks, onLogout }) {
               </select>
             </div>
 
-            {filteredTasks.map((task) => (
-              <article className="task" key={task.id}>
-                <div>
-                  <h3>{task.title}</h3>
-                  <p>{task.description}</p>
+            {filteredTasks.length === 0 ? (
+              <p className="empty-state">
+                No tasks found for this account. Create a new task to begin.
+              </p>
+            ) : (
+              filteredTasks.map((task) => (
+                <article className="task" key={task.id}>
+                  <div>
+                    <h3>{task.title}</h3>
+                    <p>{task.description}</p>
 
-                  <div className="badges">
-                    <span>{task.priority}</span>
-                    <span>{task.status}</span>
-                    {task.aiGenerated && <span>AI Description</span>}
+                    <div className="badges">
+                      <span>{task.priority}</span>
+                      <span>{task.status}</span>
+                      {currentUser.role === "Admin" && task.ownerEmail && (
+                        <span>{task.ownerEmail}</span>
+                      )}
+                      {task.aiGenerated && <span>AI Description</span>}
+                    </div>
                   </div>
-                </div>
 
-                <div className="task-actions">
-                  <button onClick={() => handleEdit(task)}>Edit</button>
+                  <div className="task-actions">
+                    <button type="button" onClick={() => handleEdit(task)}>
+                      Edit
+                    </button>
 
-                  <button
-                    className="danger"
-                    onClick={() => handleDelete(task.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </article>
-            ))}
+                    <button
+                      type="button"
+                      className="danger"
+                      onClick={() => handleDelete(task.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </article>
+              ))
+            )}
           </section>
         </section>
       </main>

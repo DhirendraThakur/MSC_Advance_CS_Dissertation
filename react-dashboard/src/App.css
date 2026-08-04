@@ -685,4 +685,12 @@ button.danger {
   .task {
     grid-template-columns: 1fr;
   }
+  .empty-state {
+  padding: 18px;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px dashed #cbd5e1;
+  line-height: 1.6;
+  }
 }
