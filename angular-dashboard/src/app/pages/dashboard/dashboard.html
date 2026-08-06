@@ -1,0 +1,101 @@
+<div class="app" *ngIf="currentUser">
+  <app-sidebar
+    [currentUser]="currentUser"
+    (logout)="logout()"
+  ></app-sidebar>
+
+  <main class="main">
+    <section class="hero">
+      <div>
+        <span class="section-label">Dissertation prototype</span>
+        <h1>AI-Enhanced Task Management Dashboard</h1>
+
+        <p>
+          Angular implementation used to evaluate task management functionality,
+          AI integration complexity, role-based access, and framework
+          suitability.
+        </p>
+      </div>
+
+      <div class="hero-panel">
+        <span>Completion rate</span>
+        <strong>{{ completionRate }}%</strong>
+
+        <div class="progress-track">
+          <div [style.width.%]="completionRate"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <div class="card stat-card blue">
+        <span>Total Tasks</span>
+        <strong>{{ totalTasks }}</strong>
+        <small>Visible tasks for this account</small>
+      </div>
+
+      <div class="card stat-card green">
+        <span>Completed</span>
+        <strong>{{ completedTasks }}</strong>
+        <small>Finished work items</small>
+      </div>
+
+      <div class="card stat-card orange">
+        <span>In Progress</span>
+        <strong>{{ inProgressTasks }}</strong>
+        <small>Currently active</small>
+      </div>
+
+      <div class="card stat-card purple">
+        <span>AI Generated</span>
+        <strong>{{ aiTasks }}</strong>
+        <small>AI-assisted descriptions</small>
+      </div>
+    </section>
+
+    <section class="insight-grid">
+      <div class="card insight-card">
+        <h2>Dashboard Summary</h2>
+
+        <p>
+          This Angular dashboard records task progress and supports AI-generated
+          task descriptions through the same backend API used by the React
+          prototype.
+        </p>
+
+        <div class="summary-list">
+          <div>
+            <span>Pending tasks</span>
+            <strong>{{ pendingTasks }}</strong>
+          </div>
+
+          <div>
+            <span>High priority</span>
+            <strong>{{ highPriorityTasks }}</strong>
+          </div>
+
+          <div>
+            <span>Framework</span>
+            <strong>Angular</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="card insight-card">
+        <h2>Evaluation Evidence</h2>
+
+        <p>
+          This prototype will support comparison of Angular against React and
+          Vue.js using the same functional requirements and backend AI service.
+        </p>
+
+        <ul class="evidence-list">
+          <li>Component and template structure</li>
+          <li>Form handling using Angular binding</li>
+          <li>Backend AI API communication</li>
+          <li>Role-based task visibility</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</div>

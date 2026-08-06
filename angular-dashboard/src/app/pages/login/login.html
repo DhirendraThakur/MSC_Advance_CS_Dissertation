@@ -1,0 +1,57 @@
+<div class="auth-page">
+  <div class="auth-left">
+    <span class="section-label">Angular prototype</span>
+    <h1>TaskFlow AI</h1>
+
+    <p>
+      AI-enhanced task management dashboard with login, registration,
+      role-based access, task handling, backend AI description generation, and
+      framework recommendation preview.
+    </p>
+
+    <div class="auth-highlight">
+      <strong>Prototype purpose</strong>
+      <p>
+        This Angular version reproduces the same requirements as the React
+        prototype so framework implementation differences can be evaluated
+        fairly.
+      </p>
+    </div>
+  </div>
+
+  <div class="auth-card">
+    <form (ngSubmit)="login()">
+      <h2>Login</h2>
+
+      <p class="auth-subtitle">
+        Use admin or student credentials to access the Angular prototype.
+      </p>
+
+      <p class="message" *ngIf="message">{{ message }}</p>
+
+      <label>Email</label>
+      <input name="email" [(ngModel)]="email" placeholder="admin@gmail.com" />
+
+      <label>Password</label>
+      <input
+        type="password"
+        name="password"
+        [(ngModel)]="password"
+        placeholder="admin123"
+      />
+
+      <button type="submit">Login</button>
+
+      <p class="switch-auth">
+        Do not have an account?
+        <a routerLink="/register">Register</a>
+      </p>
+
+      <div class="demo-box">
+        <strong>Demo accounts</strong>
+        <span>Admin: admin@gmail.com / admin123</span>
+        <span>User: dhiren@gmail.com / dhiren123</span>
+      </div>
+    </form>
+  </div>
+</div>

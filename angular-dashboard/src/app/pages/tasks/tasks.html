@@ -1,0 +1,144 @@
+<div class="app" *ngIf="currentUser as user">
+  <app-sidebar [currentUser]="user" (logout)="logout()"></app-sidebar>
+
+  <main class="main">
+    <section class="layout">
+      <form class="card form-card" (ngSubmit)="saveTask()">
+        <h2>{{ editingTaskId ? "Edit Task" : "Create New Task" }}</h2>
+
+        <p class="message" *ngIf="message">{{ message }}</p>
+
+        <label>Task Title</label>
+        <input
+          name="taskTitle"
+          [(ngModel)]="taskForm.title"
+          placeholder="Example: Prepare dissertation implementation chapter"
+        />
+
+        <button
+          type="button"
+          class="ai-button"
+          [disabled]="aiLoading"
+          (click)="generateDescription()"
+        >
+          {{
+            aiLoading
+              ? "Generating Professional Description..."
+              : "Generate Professional AI Description"
+          }}
+        </button>
+
+        <label>Description</label>
+        <textarea
+          name="taskDescription"
+          [(ngModel)]="taskForm.description"
+          placeholder="AI-generated or manually written description"
+        ></textarea>
+
+        <div class="row">
+          <div>
+            <label>Priority</label>
+            <select name="taskPriority" [(ngModel)]="taskForm.priority">
+              <option>High</option>
+              <option>Medium</option>
+              <option>Low</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Status</label>
+            <select name="taskStatus" [(ngModel)]="taskForm.status">
+              <option>Pending</option>
+              <option>In Progress</option>
+              <option>Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Due Date</label>
+        <input type="date" name="taskDueDate" [(ngModel)]="taskForm.dueDate" />
+
+        <div class="actions">
+          <button type="submit">
+            {{ editingTaskId ? "Update Task" : "Save Task" }}
+          </button>
+
+          <button type="button" class="secondary" (click)="resetTaskForm()">
+            Clear
+          </button>
+        </div>
+      </form>
+
+      <section class="card">
+        <div class="section-header">
+          <div>
+            <h2>Task List</h2>
+
+            <p>
+              Search, filter, sort, edit, and delete project tasks.
+              {{
+                user.role === "Admin"
+                  ? "Admin can view all user tasks."
+                  : "You can view only your own tasks."
+              }}
+            </p>
+          </div>
+        </div>
+
+        <div class="controls">
+          <input
+            name="search"
+            [(ngModel)]="search"
+            placeholder="Search tasks..."
+          />
+
+          <select name="filterStatus" [(ngModel)]="filterStatus">
+            <option>All</option>
+            <option>Pending</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+          </select>
+
+          <select name="sortBy" [(ngModel)]="sortBy">
+            <option value="title">Sort by title</option>
+            <option value="dueDate">Sort by due date</option>
+            <option value="priority">Sort by priority</option>
+          </select>
+        </div>
+
+        <p class="empty-state" *ngIf="filteredTasks.length === 0">
+          No tasks found for this account. Create a new task to begin.
+        </p>
+
+        <article
+          class="task"
+          *ngFor="let task of filteredTasks; trackBy: trackByTaskId"
+        >
+          <div>
+            <h3>{{ task.title }}</h3>
+            <p class="task-description">{{ task.description }}</p>
+
+            <div class="badges">
+              <span>{{ task.priority }}</span>
+              <span>{{ task.status }}</span>
+              <span *ngIf="user.role === 'Admin'">{{ task.ownerEmail }}</span>
+              <span *ngIf="task.aiGenerated">AI Description</span>
+            </div>
+          </div>
+
+          <div class="task-actions">
+            <button type="button" (click)="editTask(task)">Edit</button>
+
+            <button
+              type="button"
+              class="danger"
+              (click)="deleteTask(task.id)"
+            >
+              Delete
+            </button>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+</div>

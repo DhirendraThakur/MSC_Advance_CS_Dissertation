@@ -1,0 +1,69 @@
+<div class="app" *ngIf="currentUser">
+  <app-sidebar
+    [currentUser]="currentUser"
+    (logout)="logout()"
+  ></app-sidebar>
+
+  <main class="main">
+    <section class="admin-page">
+      <section class="hero admin-hero">
+        <div>
+          <span class="section-label">Admin control panel</span>
+          <h1>Admin Dashboard</h1>
+
+          <p>
+            This page demonstrates role-based access and administrative
+            monitoring for the Angular task management prototype.
+          </p>
+        </div>
+      </section>
+
+      <section class="stats-grid">
+        <div class="card stat-card blue">
+          <span>Total Users</span>
+          <strong>{{ users.length }}</strong>
+          <small>Registered prototype users</small>
+        </div>
+
+        <div class="card stat-card green">
+          <span>Admin Users</span>
+          <strong>{{ adminUsers }}</strong>
+          <small>Users with admin role</small>
+        </div>
+
+        <div class="card stat-card orange">
+          <span>Normal Users</span>
+          <strong>{{ normalUsers }}</strong>
+          <small>Users with standard access</small>
+        </div>
+
+        <div class="card stat-card purple">
+          <span>AI Tasks</span>
+          <strong>{{ aiTasks }}</strong>
+          <small>AI-assisted descriptions</small>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Registered Users</h2>
+
+        <div class="admin-table">
+          <div class="admin-row admin-row-head">
+            <span>Name</span>
+            <span>Email</span>
+            <span>Role</span>
+          </div>
+
+          <div
+            class="admin-row"
+            *ngFor="let registeredUser of users; trackBy: trackByUserId"
+          >
+            <span>{{ registeredUser.name }}</span>
+            <span>{{ registeredUser.email }}</span>
+            <span>{{ registeredUser.role }}</span>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>

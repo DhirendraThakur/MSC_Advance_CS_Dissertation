@@ -1,0 +1,59 @@
+<div class="app" *ngIf="currentUser">
+  <app-sidebar
+    [currentUser]="currentUser"
+    (logout)="logout()"
+  ></app-sidebar>
+
+  <main class="main">
+    <section class="card recommendation">
+      <div class="section-header">
+        <div>
+          <h2>Framework Recommendation Model Preview</h2>
+
+          <p>
+            This preview represents the dissertation’s intelligent
+            decision-support contribution.
+          </p>
+        </div>
+      </div>
+
+      <div class="recommendation-grid">
+        <div class="requirement-box">
+          <h3>Project Requirements</h3>
+          <p>Project size: Large</p>
+          <p>Maintainability priority: High</p>
+          <p>AI integration requirement: High</p>
+          <p>Security priority: High</p>
+          <p>Development time: Medium</p>
+        </div>
+
+        <div>
+          <div class="score">
+            <span>Angular</span>
+            <div><strong style="width: 84%"></strong></div>
+            <b>84%</b>
+          </div>
+
+          <div class="score">
+            <span>React</span>
+            <div><strong style="width: 76%"></strong></div>
+            <b>76%</b>
+          </div>
+
+          <div class="score">
+            <span>Vue.js</span>
+            <div><strong style="width: 71%"></strong></div>
+            <b>71%</b>
+          </div>
+
+          <p class="explanation">
+            Example explanation: Angular is recommended where maintainability,
+            scalability, security, and structured development are high
+            priorities. The final model will calculate these scores using
+            evaluation evidence from all three framework prototypes.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

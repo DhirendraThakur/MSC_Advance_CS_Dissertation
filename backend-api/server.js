@@ -49,10 +49,18 @@ Potential Risk:
 The main risk is incomplete documentation or weak evidence collection. This can be reduced by taking screenshots, recording implementation steps, and committing progress to GitHub.`;
 }
 
+function timeoutPromise(milliseconds) {
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error("OpenAI request timed out"));
+    }, milliseconds);
+  });
+}
+
 app.get("/", (req, res) => {
   res.json({
     message: "AI Task Description API is running",
-    openaiConfigured: hasOpenAIKey
+    openaiConfigured: Boolean(hasOpenAIKey)
   });
 });
 
@@ -65,17 +73,20 @@ app.post("/api/ai/generate-task-description", async (req, res) => {
     });
   }
 
+  const taskData = {
+    title,
+    priority,
+    status,
+    dueDate,
+    projectContext
+  };
+
   if (!client) {
     return res.json({
-      description: generateFallbackDescription({
-        title,
-        priority,
-        status,
-        dueDate,
-        projectContext
-      }),
+      description: generateFallbackDescription(taskData),
       source: "local-fallback",
-      note: "OpenAI API key is not configured. A professional fallback description was generated locally."
+      note:
+        "OpenAI API key is not configured. A professional fallback description was generated locally."
     });
   }
 
@@ -83,7 +94,7 @@ app.post("/api/ai/generate-task-description", async (req, res) => {
     const prompt = `
 You are a professional academic project planning assistant.
 
-Generate a high-quality task description for an AI-enhanced task management dashboard used in an MSc dissertation.
+Generate a concise but high-quality task description for an AI-enhanced task management dashboard used in an MSc dissertation.
 
 Task details:
 - Title: ${title}
@@ -95,22 +106,22 @@ Task details:
       "MSc dissertation involving React, Angular, Vue.js, AI-enhanced web applications, secure backend API integration, and an intelligent framework recommendation model."
     }
 
+Keep the answer clear and practical. Do not make it too long.
+
 Return the answer in this exact structure:
 
 Description:
-Write a professional task description in 3-4 sentences.
+Write 2-3 professional sentences.
 
 Suggested Subtasks:
 1. Subtask one
 2. Subtask two
 3. Subtask three
-4. Subtask four
 
 Acceptance Criteria:
 - Criterion one
 - Criterion two
 - Criterion three
-- Criterion four
 
 Estimated Effort:
 Low, Medium, or High with one clear reason.
@@ -119,37 +130,34 @@ Potential Risk:
 One realistic risk and one way to reduce it.
 `;
 
-    const response = await client.responses.create({
+    const openAiRequest = client.responses.create({
       model: process.env.OPENAI_MODEL || "gpt-5",
       input: prompt
     });
+
+    const response = await Promise.race([
+      openAiRequest,
+      timeoutPromise(20000)
+    ]);
 
     return res.json({
       description: response.output_text,
       source: "openai"
     });
   } catch (error) {
-    console.error("OpenAI API error:");
-    console.error("Status:", error.status);
-    console.error("Code:", error.code);
+    console.error("AI generation issue:");
     console.error("Message:", error.message);
 
     return res.json({
-      description: generateFallbackDescription({
-        title,
-        priority,
-        status,
-        dueDate,
-        projectContext
-      }),
-      source: "local-fallback-after-openai-error",
+      description: generateFallbackDescription(taskData),
+      source: "local-fallback-after-timeout-or-error",
       note:
-        "OpenAI API call failed, so the backend returned a professional fallback description. Check backend terminal for exact OpenAI error."
+        "OpenAI response was slow or failed, so the backend returned a professional fallback description."
     });
   }
 });
 
 app.listen(PORT, () => {
   console.log(`Backend API running on http://localhost:${PORT}`);
-  console.log(`OpenAI configured: ${hasOpenAIKey}`);
+  console.log(`OpenAI configured: ${Boolean(hasOpenAIKey)}`);
 });

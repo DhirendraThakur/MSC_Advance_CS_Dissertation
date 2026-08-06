@@ -1,0 +1,47 @@
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">AI</div>
+
+    <div>
+      <h2>TaskFlow AI</h2>
+      <p>{{ currentUser.role }} panel</p>
+    </div>
+  </div>
+
+  <nav>
+    <a routerLink="/dashboard" routerLinkActive="active" class="nav-button">
+      Dashboard
+    </a>
+
+    <a routerLink="/tasks" routerLinkActive="active" class="nav-button">
+      Task Management
+    </a>
+
+    <a
+      routerLink="/recommendation"
+      routerLinkActive="active"
+      class="nav-button"
+    >
+      Recommendation Model
+    </a>
+
+    <a
+      *ngIf="currentUser.role === 'Admin'"
+      routerLink="/admin"
+      routerLinkActive="active"
+      class="nav-button"
+    >
+      Admin Dashboard
+    </a>
+  </nav>
+
+  <div class="research-note">
+    <strong>Logged in as</strong>
+    <p>{{ currentUser.name }}</p>
+    <p>{{ currentUser.email }}</p>
+
+    <button type="button" class="logout-button" (click)="handleLogout()">
+      Logout
+    </button>
+  </div>
+</aside>
